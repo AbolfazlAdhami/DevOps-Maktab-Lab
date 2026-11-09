@@ -1,0 +1,16 @@
+# Bootstrap only the lab VM. Keep secrets out of this file.
+users:
+  - name: lab
+    groups: [sudo]
+    shell: /bin/bash
+    lock_passwd: true
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    ssh_authorized_keys:
+      - PLACEHOLDER_SSH_PUBLIC_KEY
+ssh_pwauth: false
+disable_root: true
+package_update: true
+packages:
+  - python3
+  - python3-apt
+final_message: "DevOps lab VM bootstrap completed after $UPTIME seconds"

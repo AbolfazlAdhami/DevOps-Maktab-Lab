@@ -1,0 +1,30 @@
+---
+- name: Prepare the Ubuntu DevOps lab VM
+  hosts: ubuntu_lab
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Upgrade installed packages to current Ubuntu repository versions
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: safe
+        cache_valid_time: 3600
+
+    - name: Install basic server administration tools
+      ansible.builtin.apt:
+        name:
+          - curl
+          - git
+          - htop
+          - jq
+          - unzip
+          - ufw
+        state: present
+
+    - name: Report the Ubuntu release and architecture
+      ansible.builtin.debug:
+        msg: >-
+          Prepared {{ ansible_facts['distribution'] }}
+          {{ ansible_facts['distribution_version'] }}
+          ({{ ansible_facts['architecture'] }}).

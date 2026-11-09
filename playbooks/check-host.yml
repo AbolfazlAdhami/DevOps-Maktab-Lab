@@ -1,0 +1,11 @@
+---
+- name: Read-only initial check of the local lab controller
+  hosts: ubuntu_lab
+  gather_facts: true
+  tasks:
+    - name: Show operating system and architecture
+      ansible.builtin.debug:
+        msg: "{{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }} / {{ ansible_facts['architecture'] }}"
+
+    - name: Confirm the Ansible-managed local target is reachable
+      ansible.builtin.ping:

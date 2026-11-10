@@ -2,6 +2,9 @@
 
 Learning project for building and deploying a small, secure service environment.
 
+برای نقشه‌راه کامل فارسی، وضعیت فازها، معماری، commitها و خروجی مورد انتظار هر
+مرحله، فایل [docs/ROADMAP-fa.md](docs/ROADMAP-fa.md) را ببینید.
+
 ## Current environment
 
 - macOS on Apple Silicon (`arm64`)

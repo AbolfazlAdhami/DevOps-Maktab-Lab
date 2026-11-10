@@ -1,0 +1,100 @@
+---
+- name: Configure the WireGuard VPN server for the private lab
+  hosts: ubuntu_lab
+  become: true
+  gather_facts: true
+
+  vars:
+    wireguard_client_public_key: "{{ client_public_key | default('') }}"
+    wireguard_private_dir: /etc/wireguard
+    wireguard_config: /etc/wireguard/wg0.conf
+    lab_subnet: 192.168.252.0/24
+
+  pre_tasks:
+    - name: Require a client public key
+      ansible.builtin.assert:
+        that:
+          - wireguard_client_public_key | length > 20
+        fail_msg: Pass the client public key with -e client_public_key=...
+
+  tasks:
+    - name: Install WireGuard and tools
+      ansible.builtin.apt:
+        name:
+          - wireguard
+          - wireguard-tools
+        state: present
+        update_cache: false
+
+    - name: Create the protected WireGuard directory
+      ansible.builtin.file:
+        path: "{{ wireguard_private_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+
+    - name: Generate the server private key once
+      ansible.builtin.shell: |
+        umask 077
+        wg genkey > {{ wireguard_private_dir }}/server.key
+      args:
+        creates: "{{ wireguard_private_dir }}/server.key"
+      no_log: true
+
+    - name: Read the server private key
+      ansible.builtin.slurp:
+        src: "{{ wireguard_private_dir }}/server.key"
+      register: server_private_key_file
+      no_log: true
+
+    - name: Configure WireGuard interface
+      ansible.builtin.template:
+        src: ../templates/wg0.conf.j2
+        dest: "{{ wireguard_config }}"
+        owner: root
+        group: root
+        mode: '0600'
+      vars:
+        wireguard_server_private_key: "{{ server_private_key_file.content | b64decode | trim }}"
+      notify: Restart WireGuard
+      no_log: true
+
+    - name: Enable IPv4 forwarding for VPN routing
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        state: present
+        reload: true
+
+    - name: Allow WireGuard from the private Multipass network
+      community.general.ufw:
+        rule: allow
+        port: '51820'
+        proto: udp
+        from_ip: "{{ lab_subnet }}"
+        comment: Lab WireGuard VPN
+
+    - name: Enable and start WireGuard
+      ansible.builtin.systemd:
+        name: wg-quick@wg0
+        enabled: true
+        state: started
+
+    - name: Read the server public key
+      ansible.builtin.shell: "wg pubkey < {{ wireguard_private_dir }}/server.key"
+      register: server_public_key
+      changed_when: false
+
+    - name: Show non-secret VPN connection details
+      ansible.builtin.debug:
+        msg:
+          - "Server VPN address: 10.8.0.1/24"
+          - "Server endpoint for this lab: {{ ansible_facts['default_ipv4']['address'] }}:51820"
+          - "Server public key: {{ server_public_key.stdout }}"
+
+  handlers:
+    - name: Restart WireGuard
+      ansible.builtin.systemd:
+        name: wg-quick@wg0
+        state: restarted

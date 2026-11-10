@@ -54,6 +54,13 @@ Configure the private lab DNS with `ansible-playbook playbooks/private-dns.yml`.
 It provides `devops-ubuntu.lab.internal` and `vm.lab.internal` on the private
 Multipass subnet only; it is not a public DNS service.
 
+The WireGuard lab server is defined in `playbooks/wireguard-server.yml`. It
+requires a client public key passed as `client_public_key`; do not put private
+keys in Git. This VM has no public IP, so the VPN endpoint is reachable only
+from the Multipass private network until a real server and public IP exist.
+The generated client profile is stored outside this repository at
+`~/.ssh/devops_lab-wg0.conf` with mode `0600`.
+
 Do not expose this lab VM directly to the public internet. Its initial lab user
 has passwordless sudo and SSH-key-only access; use this only in the isolated
 local Multipass environment.

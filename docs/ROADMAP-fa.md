@@ -81,6 +81,19 @@ macOS Apple Silicon
 - بازکردن TCP/53 و UDP/53 فقط برای شبکه‌ی `192.168.252.0/24`.
 - تست موفق resolve به IP `192.168.252.2`.
 
+### فاز ۸ — VPN آزمایشگاهی WireGuard
+
+- نصب `wireguard-tools` روی Ubuntu.
+- ساخت interface به نام `wg0` با آدرس `10.8.0.1/24`.
+- فعال‌سازی IPv4 forwarding.
+- بازکردن UDP/51820 فقط برای شبکه‌ی خصوصی Multipass.
+- ثبت یک peer کلاینت با آدرس `10.8.0.2/32`.
+- ساخت فایل کلاینت خارج از Git در `~/.ssh/devops_lab-wg0.conf`.
+
+وضعیت: **سرور آماده و فعال؛ handshake کلاینت macOS هنوز انجام نشده است** چون
+ابزار WireGuard روی macOS در حال نصب/دانلود وابستگی‌هاست. این VPN فعلاً فقط
+برای شبکه‌ی خصوصی آزمایشگاه است و IP عمومی ندارد.
+
 ## ۴. Commitهای فعلی
 
 | Commit | توضیح |
@@ -225,7 +238,8 @@ macOS Apple Silicon
 | A طراحی معماری | در حال تکمیل |
 | B VM و Ansible | انجام شده برای lab |
 | C UFW و DNS پایه | انجام شده برای lab |
-| C VPN و PAM | انجام نشده |
+| C VPN WireGuard آزمایشگاهی | سرور انجام شده؛ کلاینت pending |
+| C PAM | انجام نشده |
 | D Kubernetes و NFS | انجام نشده |
 | E CI/CD و GitOps | انجام نشده |
 | F برنامه‌ها و دیتابیس | انجام نشده |

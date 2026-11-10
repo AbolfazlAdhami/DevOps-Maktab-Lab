@@ -1,0 +1,9 @@
+[Interface]
+Address = 10.8.0.1/24
+ListenPort = 51820
+PrivateKey = {{ wireguard_server_private_key }}
+
+[Peer]
+# Lab client; replace with another client public key for additional peers.
+PublicKey = {{ wireguard_client_public_key }}
+AllowedIPs = 10.8.0.2/32

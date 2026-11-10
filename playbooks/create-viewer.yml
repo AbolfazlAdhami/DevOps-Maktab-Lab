@@ -1,0 +1,41 @@
+---
+- name: Create a least-privilege viewer account
+  hosts: ubuntu_lab
+  become: true
+  gather_facts: false
+
+  vars:
+    viewer_username: viewer
+
+  tasks:
+    - name: Create the viewer account without administrator privileges
+      ansible.builtin.user:
+        name: "{{ viewer_username }}"
+        comment: Read-only lab account
+        shell: /bin/bash
+        create_home: true
+        groups: []
+        append: false
+        password_lock: true
+        state: present
+
+    - name: Ensure the viewer account is not granted sudo access
+      ansible.builtin.file:
+        path: "/etc/sudoers.d/{{ viewer_username }}"
+        state: absent
+
+    - name: Verify viewer is not in the sudo group
+      ansible.builtin.command:
+        argv:
+          - id
+          - -nG
+          - "{{ viewer_username }}"
+      register: viewer_groups
+      changed_when: false
+
+    - name: Fail if viewer has sudo group membership
+      ansible.builtin.assert:
+        that:
+          - "'sudo' not in viewer_groups.stdout.split()"
+        fail_msg: The viewer account must not be a member of the sudo group.
+        success_msg: The viewer account is not a member of the sudo group.

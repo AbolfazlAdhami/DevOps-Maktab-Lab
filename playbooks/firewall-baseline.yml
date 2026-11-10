@@ -1,0 +1,28 @@
+---
+- name: Configure a conservative UFW baseline for the local lab VM
+  hosts: ubuntu_lab
+  become: true
+  gather_facts: false
+
+  vars:
+    # Multipass manages this private interface. Keep UFW inactive until we
+    # confirm the VM's access path and test rules without risking lockout.
+
+  tasks:
+    - name: Ensure UFW is installed
+      ansible.builtin.apt:
+        name: ufw
+        state: present
+        update_cache: false
+
+    - name: Read UFW status without changing firewall rules
+      ansible.builtin.command:
+        argv: [ufw, status, verbose]
+      register: ufw_status
+      changed_when: false
+
+    - name: Report current firewall and SSH state
+      ansible.builtin.debug:
+        msg: >-
+          {{ ufw_status.stdout }}. SSH is key-only on port 22. No firewall
+          rules were changed. Review Multipass access before enabling UFW.

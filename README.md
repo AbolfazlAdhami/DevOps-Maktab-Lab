@@ -33,6 +33,15 @@ Prepare it with `ansible-playbook playbooks/prepare-ubuntu.yml`. The preparation
 playbook updates packages and installs basic tools; it does not enable UFW or
 change network access.
 
+Create the restricted viewer account with `ansible-playbook playbooks/create-viewer.yml`.
+The account is password-locked and is not granted sudo membership. It is for
+local account/permissions exercises, not remote login until SSH access is
+deliberately configured in a later security step.
+
+Inspect SSH and firewall status with `ansible-playbook playbooks/firewall-baseline.yml`.
+This inspection does not enable UFW or modify firewall rules; review Multipass
+network access before changing firewall policy.
+
 Do not expose this lab VM directly to the public internet. Its initial lab user
 has passwordless sudo and SSH-key-only access; use this only in the isolated
 local Multipass environment.

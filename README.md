@@ -47,6 +47,10 @@ After confirming the VM is reachable, apply the lab firewall with
 denies unsolicited incoming traffic, allows outgoing traffic, enables low-level
 logging, and verifies the connection afterward.
 
+Configure the private lab DNS with `ansible-playbook playbooks/private-dns.yml`.
+It provides `devops-ubuntu.lab.internal` and `vm.lab.internal` on the private
+Multipass subnet only; it is not a public DNS service.
+
 Do not expose this lab VM directly to the public internet. Its initial lab user
 has passwordless sudo and SSH-key-only access; use this only in the isolated
 local Multipass environment.

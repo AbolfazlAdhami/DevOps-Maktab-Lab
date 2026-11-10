@@ -1,0 +1,68 @@
+---
+- name: Configure private DNS for the DevOps lab
+  hosts: ubuntu_lab
+  become: true
+  gather_facts: true
+
+  vars:
+    lab_domain: lab.internal
+    lab_subnet: 192.168.252.0/24
+
+  tasks:
+    - name: Install dnsmasq and DNS test tools
+      ansible.builtin.apt:
+        name:
+          - dnsmasq
+          - dnsutils
+        state: present
+        update_cache: false
+
+    - name: Configure the private lab DNS server
+      ansible.builtin.template:
+        src: ../templates/devops-lab-dnsmasq.conf.j2
+        dest: /etc/dnsmasq.d/devops-lab.conf
+        owner: root
+        group: root
+        mode: '0644'
+        validate: '/usr/sbin/dnsmasq --test --conf-file=%s'
+      notify: Restart dnsmasq
+
+    - name: Allow DNS queries from the private Multipass subnet
+      community.general.ufw:
+        rule: allow
+        port: '53'
+        proto: '{{ item }}'
+        from_ip: '{{ lab_subnet }}'
+        comment: Private lab DNS
+      loop:
+        - udp
+        - tcp
+
+    - name: Ensure dnsmasq is enabled and running
+      ansible.builtin.service:
+        name: dnsmasq
+        state: started
+        enabled: true
+
+    - name: Test a private DNS record locally
+      ansible.builtin.command:
+        argv:
+          - dig
+          - +short
+          - '@127.0.0.1'
+          - 'devops-ubuntu.{{ lab_domain }}'
+      register: dns_test
+      changed_when: false
+
+    - name: Verify the private DNS record resolves to the VM address
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['default_ipv4']['address'] in dns_test.stdout_lines
+        fail_msg: Private DNS did not return the VM's private IP.
+        success_msg: Private DNS is resolving the lab record correctly.
+
+  handlers:
+    - name: Restart dnsmasq
+      ansible.builtin.service:
+        name: dnsmasq
+        state: restarted

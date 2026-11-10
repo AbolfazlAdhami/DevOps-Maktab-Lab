@@ -1,0 +1,38 @@
+---
+- name: Enable a safe baseline firewall on the Ubuntu lab VM
+  hosts: ubuntu_lab
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Allow SSH before enabling UFW
+      community.general.ufw:
+        rule: allow
+        port: '22'
+        proto: tcp
+        comment: Ansible management SSH
+
+    - name: Deny unsolicited incoming connections by default
+      community.general.ufw:
+        direction: incoming
+        policy: deny
+
+    - name: Allow outgoing connections by default
+      community.general.ufw:
+        direction: outgoing
+        policy: allow
+
+    - name: Enable UFW
+      community.general.ufw:
+        state: enabled
+        logging: low
+
+    - name: Read the resulting firewall status
+      ansible.builtin.command:
+        argv: [ufw, status, verbose]
+      register: ufw_status
+      changed_when: false
+
+    - name: Show the resulting firewall status
+      ansible.builtin.debug:
+        var: ufw_status.stdout_lines

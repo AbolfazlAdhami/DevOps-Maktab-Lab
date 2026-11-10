@@ -42,6 +42,11 @@ Inspect SSH and firewall status with `ansible-playbook playbooks/firewall-baseli
 This inspection does not enable UFW or modify firewall rules; review Multipass
 network access before changing firewall policy.
 
+After confirming the VM is reachable, apply the lab firewall with
+`ansible-playbook playbooks/enable-firewall.yml`. It permits SSH on TCP/22,
+denies unsolicited incoming traffic, allows outgoing traffic, enables low-level
+logging, and verifies the connection afterward.
+
 Do not expose this lab VM directly to the public internet. Its initial lab user
 has passwordless sudo and SSH-key-only access; use this only in the isolated
 local Multipass environment.

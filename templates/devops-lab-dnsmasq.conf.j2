@@ -1,7 +1,7 @@
 # Private DNS for the Multipass lab network.
 domain={{ lab_domain }}
 local=/.{{ lab_domain }}/
-listen-address=127.0.0.1,{{ ansible_facts['default_ipv4']['address'] }}
+listen-address=127.0.0.1,{{ ansible_facts['default_ipv4']['address'] }},10.8.0.1
 bind-interfaces
 no-resolv
 server=1.1.1.1
